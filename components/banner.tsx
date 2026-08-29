@@ -44,36 +44,19 @@ const Banner = ({ hide, setHide }: BannerProps) => {
   return (
     <div
       id="sticky-banner"
-      className="fixed left-0 top-0 z-50 block h-20 w-full bg-secondary p-2.5 opacity-[0.98] shadow-md sm:h-16 lg:h-10"
+      className="fixed left-0 top-0 z-50 block h-20 w-full bg-[#f0d97a] border-b border-[#dcc669] text-[#534600] p-2.5 opacity-[0.98] shadow-sm sm:h-16 lg:h-10"
     >
       <div className="relative w-full">
         <div className="flex items-center justify-center">
-          <p className="text-sm font-normal">
-            📢{" "}
-            <strong className="font-semibold">
-              Account creation is currently not working
+          <p className="text-sm font-medium">
+            ✨{" "}
+            <strong className="font-bold">
+              Direct Access Enabled
             </strong>{" "}
-            due to Clerk&apos;s 500-user limit. To try it out, please{" "}
-            <Link
-              href={`${links.sourceCode}/fork`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="text-green-600 transition-opacity hover:opacity-75"
-            >
-              fork this repo
-            </Link>{" "}
-            or{" "}
-            <Link
-              href={`mailto:${links.email}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="text-green-600 transition-opacity hover:opacity-75"
-            >
-              Contact me
-            </Link>{" "}
-            for access.
+            — Enjoy all curriculum lessons, quizzes, quests, and features without any login requirements!
           </p>
         </div>
+
 
         <button
           data-dismiss-target="#sticky-banner"
