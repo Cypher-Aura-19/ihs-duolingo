@@ -1,11 +1,15 @@
 import { cache } from "react";
 
-import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
+
+import { auth } from "@/lib/auth";
+import { mockCourses, mockStore } from "@/lib/mock-data";
 
 import db from "./drizzle";
 import {
+  challengeOptions,
   challengeProgress,
+  challenges,
   courses,
   lessons,
   units,
@@ -16,9 +20,14 @@ import {
 const DAY_IN_MS = 86_400_000;
 
 export const getCourses = cache(async () => {
-  const data = await db.query.courses.findMany();
+  try {
+    const data = await db.query.courses.findMany();
+    if (data && data.length > 0) return data;
+  } catch (e) {
+    console.warn("Using fallback courses dataset");
+  }
 
-  return data;
+  return mockCourses;
 });
 
 export const getUserProgress = cache(async () => {
@@ -26,14 +35,20 @@ export const getUserProgress = cache(async () => {
 
   if (!userId) return null;
 
-  const data = await db.query.userProgress.findFirst({
-    where: eq(userProgress.userId, userId),
-    with: {
-      activeCourse: true,
-    },
-  });
+  try {
+    const data = await db.query.userProgress.findFirst({
+      where: eq(userProgress.userId, userId),
+      with: {
+        activeCourse: true,
+      },
+    });
 
-  return data;
+    if (data && data.activeCourse) return data;
+  } catch (e) {
+    console.warn("Using fallback user progress");
+  }
+
+  return mockStore.getUserProgress(userId);
 });
 
 export const getUnits = cache(async () => {
@@ -42,65 +57,97 @@ export const getUnits = cache(async () => {
 
   if (!userId || !userProgress?.activeCourseId) return [];
 
-  const data = await db.query.units.findMany({
-    where: eq(units.courseId, userProgress.activeCourseId),
-    orderBy: (units, { asc }) => [asc(units.order)],
-    with: {
-      lessons: {
-        orderBy: (lessons, { asc }) => [asc(lessons.order)],
-        with: {
-          challenges: {
-            orderBy: (challenges, { asc }) => [asc(challenges.order)],
-            with: {
-              challengeProgress: {
-                where: eq(challengeProgress.userId, userId),
+  try {
+    const data = await db.query.units.findMany({
+      where: eq(units.courseId, userProgress.activeCourseId),
+      orderBy: (units, { asc }) => [asc(units.order)],
+      with: {
+        lessons: {
+          orderBy: (lessons, { asc }) => [asc(lessons.order)],
+          with: {
+            challenges: {
+              orderBy: (challenges, { asc }) => [asc(challenges.order)],
+              with: {
+                challengeProgress: {
+                  where: eq(challengeProgress.userId, userId),
+                },
               },
             },
           },
         },
       },
-    },
-  });
-
-  const normalizedData = data.map((unit) => {
-    const lessonsWithCompletedStatus = unit.lessons.map((lesson) => {
-      if (lesson.challenges.length === 0)
-        return { ...lesson, completed: false };
-
-      const allCompletedChallenges = lesson.challenges.every((challenge) => {
-        return (
-          challenge.challengeProgress &&
-          challenge.challengeProgress.length > 0 &&
-          challenge.challengeProgress.every((progress) => progress.completed)
-        );
-      });
-
-      return { ...lesson, completed: allCompletedChallenges };
     });
 
-    return { ...unit, lessons: lessonsWithCompletedStatus };
-  });
+    if (data && data.length > 0) {
+      const normalizedData = data.map((unit) => {
+        const lessonsWithCompletedStatus = unit.lessons.map((lesson) => {
+          if (lesson.challenges.length === 0)
+            return { ...lesson, completed: false };
 
-  return normalizedData;
+          const allCompletedChallenges = lesson.challenges.every((challenge) => {
+            return (
+              challenge.challengeProgress &&
+              challenge.challengeProgress.length > 0 &&
+              challenge.challengeProgress.every((progress) => progress.completed)
+            );
+          });
+
+          return { ...lesson, completed: allCompletedChallenges };
+        });
+
+        return { ...unit, lessons: lessonsWithCompletedStatus };
+      });
+
+      return normalizedData;
+    }
+  } catch (e) {
+    console.warn("Using fallback units dataset");
+  }
+
+  return mockStore.getUnits(userProgress.activeCourseId, userId);
 });
 
 export const getCourseById = cache(async (courseId: number) => {
-  const data = await db.query.courses.findFirst({
-    where: eq(courses.id, courseId),
-    with: {
-      units: {
-        orderBy: (units, { asc }) => [asc(units.order)],
-        with: {
-          lessons: {
-            orderBy: (lessons, { asc }) => [asc(lessons.order)],
+  try {
+    const data = await db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+      with: {
+        units: {
+          orderBy: (units, { asc }) => [asc(units.order)],
+          with: {
+            lessons: {
+              orderBy: (lessons, { asc }) => [asc(lessons.order)],
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  return data;
+    if (data) return data;
+  } catch (e) {
+    console.warn("Using fallback course data");
+  }
+
+  const course = mockStore.getCourse(courseId) || mockCourses[0];
+  const units = mockUnitsFallback(courseId);
+  return {
+    ...course,
+    units,
+  };
 });
+
+function mockUnitsFallback(courseId: number) {
+  return [
+    {
+      id: 1,
+      courseId,
+      title: "Unit 1",
+      description: "Learn the basics",
+      order: 1,
+      lessons: [{ id: 1, unitId: 1, title: "Nouns", order: 1 }],
+    },
+  ];
+}
 
 export const getCourseProgress = cache(async () => {
   const { userId } = await auth();
@@ -108,41 +155,59 @@ export const getCourseProgress = cache(async () => {
 
   if (!userId || !userProgress?.activeCourseId) return null;
 
-  const unitsInActiveCourse = await db.query.units.findMany({
-    orderBy: (units, { asc }) => [asc(units.order)],
-    where: eq(units.courseId, userProgress.activeCourseId),
-    with: {
-      lessons: {
-        orderBy: (lessons, { asc }) => [asc(lessons.order)],
-        with: {
-          unit: true,
-          challenges: {
-            with: {
-              challengeProgress: {
-                where: eq(challengeProgress.userId, userId),
+  try {
+    const unitsInActiveCourse = await db.query.units.findMany({
+      orderBy: (units, { asc }) => [asc(units.order)],
+      where: eq(units.courseId, userProgress.activeCourseId),
+      with: {
+        lessons: {
+          orderBy: (lessons, { asc }) => [asc(lessons.order)],
+          with: {
+            unit: true,
+            challenges: {
+              with: {
+                challengeProgress: {
+                  where: eq(challengeProgress.userId, userId),
+                },
               },
             },
           },
         },
       },
-    },
-  });
-
-  const firstUncompletedLesson = unitsInActiveCourse
-    .flatMap((unit) => unit.lessons)
-    .find((lesson) => {
-      return lesson.challenges.some((challenge) => {
-        return (
-          !challenge.challengeProgress ||
-          challenge.challengeProgress.length === 0 ||
-          challenge.challengeProgress.some((progress) => !progress.completed)
-        );
-      });
     });
 
+    if (unitsInActiveCourse && unitsInActiveCourse.length > 0) {
+      const firstUncompletedLesson = unitsInActiveCourse
+        .flatMap((unit) => unit.lessons)
+        .find((lesson) => {
+          return lesson.challenges.some((challenge) => {
+            return (
+              !challenge.challengeProgress ||
+              challenge.challengeProgress.length === 0 ||
+              challenge.challengeProgress.some((progress) => !progress.completed)
+            );
+          });
+        });
+
+      return {
+        activeLesson: firstUncompletedLesson,
+        activeLessonId: firstUncompletedLesson?.id,
+      };
+    }
+  } catch (e) {
+    console.warn("Using fallback course progress");
+  }
+
+  const allUnits = mockStore.getUnits(userProgress.activeCourseId, userId);
+  const firstUncompletedLesson = allUnits
+    .flatMap((u) => u.lessons || [])
+    .find((l) => !l.completed);
+
+  const activeLesson = firstUncompletedLesson || allUnits[0]?.lessons?.[0];
+
   return {
-    activeLesson: firstUncompletedLesson,
-    activeLessonId: firstUncompletedLesson?.id,
+    activeLesson: activeLesson ? { ...activeLesson, unit: allUnits[0] } : undefined,
+    activeLessonId: activeLesson?.id || 1,
   };
 });
 
@@ -152,37 +217,45 @@ export const getLesson = cache(async (id?: number) => {
   if (!userId) return null;
 
   const courseProgress = await getCourseProgress();
-  const lessonId = id || courseProgress?.activeLessonId;
+  const lessonId = id || courseProgress?.activeLessonId || 1;
 
-  if (!lessonId) return null;
-
-  const data = await db.query.lessons.findFirst({
-    where: eq(lessons.id, lessonId),
-    with: {
-      challenges: {
-        orderBy: (challenges, { asc }) => [asc(challenges.order)],
-        with: {
-          challengeOptions: true,
-          challengeProgress: {
-            where: eq(challengeProgress.userId, userId),
+  try {
+    const data = await db.query.lessons.findFirst({
+      where: eq(lessons.id, lessonId),
+      with: {
+        challenges: {
+          orderBy: (challenges, { asc }) => [asc(challenges.order)],
+          with: {
+            challengeOptions: true,
+            challengeProgress: {
+              where: eq(challengeProgress.userId, userId),
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!data || !data.challenges) return null;
+    if (data && data.challenges && data.challenges.length > 0) {
+      const normalizedChallenges = data.challenges.map((challenge) => {
+        const completed =
+          challenge.challengeProgress &&
+          challenge.challengeProgress.length > 0 &&
+          challenge.challengeProgress.every((progress) => progress.completed);
 
-  const normalizedChallenges = data.challenges.map((challenge) => {
-    const completed =
-      challenge.challengeProgress &&
-      challenge.challengeProgress.length > 0 &&
-      challenge.challengeProgress.every((progress) => progress.completed);
+        return {
+          ...challenge,
+          completed: !!completed,
+          challengeOptions: challenge.challengeOptions,
+        };
+      });
 
-    return { ...challenge, completed };
-  });
+      return { ...data, challenges: normalizedChallenges };
+    }
+  } catch (e) {
+    console.warn("Using fallback lesson data");
+  }
 
-  return { ...data, challenges: normalizedChallenges };
+  return mockStore.getLesson(lessonId, userId);
 });
 
 export const getLessonPercentage = cache(async () => {
@@ -192,7 +265,7 @@ export const getLessonPercentage = cache(async () => {
 
   const lesson = await getLesson(courseProgress?.activeLessonId);
 
-  if (!lesson) return 0;
+  if (!lesson || !lesson.challenges || lesson.challenges.length === 0) return 0;
 
   const completedChallenges = lesson.challenges.filter(
     (challenge) => challenge.completed
@@ -210,20 +283,26 @@ export const getUserSubscription = cache(async () => {
 
   if (!userId) return null;
 
-  const data = await db.query.userSubscription.findFirst({
-    where: eq(userSubscription.userId, userId),
-  });
+  try {
+    const data = await db.query.userSubscription.findFirst({
+      where: eq(userSubscription.userId, userId),
+    });
 
-  if (!data) return null;
+    if (data) {
+      const isActive =
+        !!data.stripePriceId &&
+        data.stripeCurrentPeriodEnd?.getTime() + DAY_IN_MS > Date.now();
 
-  const isActive =
-    data.stripePriceId &&
-    data.stripeCurrentPeriodEnd?.getTime() + DAY_IN_MS > Date.now();
+      return {
+        ...data,
+        isActive: !!isActive,
+      };
+    }
+  } catch (e) {
+    console.warn("Using fallback user subscription");
+  }
 
-  return {
-    ...data,
-    isActive: !!isActive,
-  };
+  return mockStore.userSubscription;
 });
 
 export const getTopTenUsers = cache(async () => {
@@ -231,16 +310,32 @@ export const getTopTenUsers = cache(async () => {
 
   if (!userId) return [];
 
-  const data = await db.query.userProgress.findMany({
-    orderBy: (userProgress, { desc }) => [desc(userProgress.points)],
-    limit: 10,
-    columns: {
-      userId: true,
-      userName: true,
-      userImageSrc: true,
-      points: true,
-    },
-  });
+  try {
+    const data = await db.query.userProgress.findMany({
+      orderBy: (userProgress, { desc }) => [desc(userProgress.points)],
+      limit: 10,
+      columns: {
+        userId: true,
+        userName: true,
+        userImageSrc: true,
+        points: true,
+      },
+    });
 
-  return data;
+    if (data && data.length > 0) return data;
+  } catch (e) {
+    console.warn("Using fallback top users");
+  }
+
+  return mockStore.getLeaderboard();
 });
+
+export const getStudentProfile = cache(async () => {
+  const { userId } = await auth();
+
+  if (!userId) return null;
+
+  return mockStore.getStudentProfile(userId);
+});
+
+

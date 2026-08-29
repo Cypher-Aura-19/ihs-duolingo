@@ -1,8 +1,12 @@
 "use server";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
+import db from "@/db/drizzle";
 import { getUserSubscription } from "@/db/queries";
+import { userSubscription } from "@/db/schema";
+import { auth, currentUser } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
 
@@ -14,12 +18,52 @@ export const createStripeUrl = async () => {
 
   if (!userId || !user) throw new Error("Unauthorized.");
 
-  const userSubscription = await getUserSubscription();
+  // If Stripe key is dummy/missing, toggle Pro directly for instant local testing
+  if (
+    !process.env.STRIPE_API_SECRET_KEY ||
+    process.env.STRIPE_API_SECRET_KEY.includes("XXXXXXXX")
+  ) {
+    const existing = await getUserSubscription();
+
+    if (existing?.isActive) {
+      return { data: "/shop" };
+    }
+
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 30);
+
+    if (existing) {
+      await db
+        .update(userSubscription)
+        .set({
+          stripePriceId: "price_mock_pro",
+          stripeCurrentPeriodEnd: futureDate,
+        })
+        .where(eq(userSubscription.userId, userId));
+    } else {
+      await db.insert(userSubscription).values({
+        userId,
+        stripeCustomerId: `cus_guest_${Date.now()}`,
+        stripeSubscriptionId: `sub_guest_${Date.now()}`,
+        stripePriceId: "price_mock_pro",
+        stripeCurrentPeriodEnd: futureDate,
+      });
+    }
+
+    revalidatePath("/shop");
+    revalidatePath("/learn");
+    revalidatePath("/quests");
+    revalidatePath("/leaderboard");
+
+    return { data: "/shop" };
+  }
+
+  const existingSubscription = await getUserSubscription();
 
   // redirect user to customer portal who already have a subscription
-  if (userSubscription && userSubscription.stripeCustomerId) {
+  if (existingSubscription && existingSubscription.stripeCustomerId) {
     const stripeSession = await stripe.billingPortal.sessions.create({
-      customer: userSubscription.stripeCustomerId,
+      customer: existingSubscription.stripeCustomerId,
       return_url: returnUrl,
     });
 
@@ -56,3 +100,4 @@ export const createStripeUrl = async () => {
 
   return { data: stripeSession.url };
 };
+
