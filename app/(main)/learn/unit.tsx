@@ -20,18 +20,28 @@ type UnitProps = {
 };
 
 export const Unit = ({
+  order,
   title,
   description,
   lessons,
   activeLesson,
   activeLessonPercentage,
 }: UnitProps) => {
-  return (
-    <>
-      <UnitBanner title={title} description={description} />
+  const completedLessons = lessons.filter((lesson) => lesson.completed).length;
+  const isActiveUnit = lessons.some((lesson) => lesson.id === activeLesson?.id);
 
-      <div className="relative flex flex-col items-center">
-        {lessons.map((lesson, i) => {
+  return (
+    <section id={`unit-${order}`}>
+      <UnitBanner
+        title={title}
+        description={description}
+        completedLessons={completedLessons}
+        totalLessons={lessons.length}
+        isActive={isActiveUnit}
+      />
+
+      <div className="relative mx-auto max-w-[620px] py-8">
+        {lessons.map((lesson, index) => {
           const isCurrent = lesson.id === activeLesson?.id;
           const isLocked = !lesson.completed && !isCurrent;
 
@@ -39,8 +49,10 @@ export const Unit = ({
             <LessonButton
               key={lesson.id}
               id={lesson.id}
-              index={i}
-              totalCount={lessons.length - 1}
+              title={lesson.title}
+              lessonNumber={lesson.order}
+              index={index}
+              totalCount={lessons.length}
               current={isCurrent}
               locked={isLocked}
               percentage={activeLessonPercentage}
@@ -48,6 +60,6 @@ export const Unit = ({
           );
         })}
       </div>
-    </>
+    </section>
   );
 };
