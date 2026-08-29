@@ -1,15 +1,6 @@
 "use client";
 import { useState } from "react";
 
-import {
-  ClerkLoaded,
-  ClerkLoading,
-  SignInButton,
-  Show,
-  UserButton,
-  useAuth,
-} from "@clerk/nextjs";
-import { Loader } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,7 +10,6 @@ import { links } from "@/config";
 import { cn } from "@/lib/utils";
 
 export const Header = () => {
-  const { isSignedIn } = useAuth();
   const [hideBanner, setHideBanner] = useState(true);
 
   return (
@@ -28,7 +18,7 @@ export const Header = () => {
 
       <header
         className={cn(
-          "h-20 w-full border-b-2 border-slate-200 px-4",
+          "h-20 w-full border-b-2 border-[#e8e2d7] bg-[#fff9ee] px-4",
           !hideBanner ? "mt-20 sm:mt-16 lg:mt-10" : "mt-0"
         )}
       >
@@ -40,45 +30,36 @@ export const Header = () => {
           >
             <Image src="/mascot.svg" alt="Mascot" height={40} width={40} />
 
-            <h1 className="text-2xl font-extrabold tracking-wide text-green-600">
+            <h1 className="text-2xl font-extrabold tracking-wide text-[#6e5e06] font-heading">
               Lingo
             </h1>
           </Link>
 
-          <div className="flex gap-x-3">
-            <ClerkLoading>
-              <Loader className="h-5 w-5 animate-spin text-muted-foreground" />
-            </ClerkLoading>
-            <ClerkLoaded>
-              <Show when="signed-in">
-                <UserButton />
-              </Show>
-
-              <Show when="signed-out">
-                <SignInButton mode="modal">
-                  <Button size="lg" variant="ghost">
-                    Login
-                  </Button>
-                </SignInButton>
-              </Show>
-
-              <Link
-                href={links.sourceCode}
-                target="_blank"
-                rel="noreferrer noopener"
-                className={isSignedIn ? "pt-1.5" : "pt-3"}
-              >
-                <Image
-                  src="/github.svg"
-                  alt="Source Code"
-                  height={20}
-                  width={20}
-                />
+          <div className="flex items-center gap-x-3">
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/learn" prefetch>
+                Start Learning
               </Link>
-            </ClerkLoaded>
+            </Button>
+
+            <Link
+              href={links.sourceCode}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="p-2 transition hover:opacity-75"
+            >
+              <Image
+                src="/github.svg"
+                alt="Source Code"
+                height={20}
+                width={20}
+              />
+            </Link>
           </div>
         </div>
       </header>
+
     </>
   );
 };
+

@@ -1,11 +1,3 @@
-import {
-  ClerkLoaded,
-  ClerkLoading,
-  SignInButton,
-  SignUpButton,
-  Show,
-} from "@clerk/nextjs";
-import { Loader } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,40 +11,26 @@ export default function MarketingPage() {
       </div>
 
       <div className="flex flex-col items-center gap-y-8">
-        <h1 className="max-w-[480px] text-center text-xl font-bold text-neutral-600 lg:text-3xl">
-          Learn, practice and master new languages with Lingo.
+        <h1 className="max-w-[480px] text-center text-2xl font-extrabold text-[#1d1b15] font-heading lg:text-4xl leading-tight">
+          Learn, practice and master new languages with Academic Excellence.
         </h1>
 
         <div className="flex w-full max-w-[330px] flex-col items-center gap-y-3">
-          <ClerkLoading>
-            <Loader className="h-5 w-5 animate-spin text-muted-foreground" />
-          </ClerkLoading>
+          <Button size="lg" variant="secondary" className="w-full" asChild>
+            <Link href="/learn" prefetch>
+              Enter / Continue Learning
+            </Link>
+          </Button>
 
-          <ClerkLoaded>
-            <Show when="signed-in">
-              <Button size="lg" variant="secondary" className="w-full" asChild>
-                <Link href="/learn" prefetch>
-                  Continue Learning
-                </Link>
-              </Button>
-            </Show>
-
-            <Show when="signed-out">
-              <SignUpButton mode="modal">
-                <Button size="lg" variant="secondary" className="w-full">
-                  Get Started
-                </Button>
-              </SignUpButton>
-
-              <SignInButton mode="modal">
-                <Button size="lg" variant="primaryOutline" className="w-full">
-                  I already have an account
-                </Button>
-              </SignInButton>
-            </Show>
-          </ClerkLoaded>
+          <Button size="lg" variant="primaryOutline" className="w-full" asChild>
+            <Link href="/courses" prefetch>
+              Explore Language Courses
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
   );
 }
+
+
