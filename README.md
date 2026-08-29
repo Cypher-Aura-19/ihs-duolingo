@@ -64,7 +64,9 @@ duolingo-clone/
     |-- icon2.png
     |-- layout.tsx
   |- components/
+    |-- activities/
     |-- modals/
+    |-- profile/
     |-- ui/
     |-- banner.tsx
     |-- feed-wrapper.tsx
@@ -84,6 +86,8 @@ duolingo-clone/
     |-- schema.ts
   |- lib/
     |-- admin.ts
+    |-- auth.tsx
+    |-- mock-data.ts
     |-- stripe.ts
     |-- utils.ts
   |- public/
@@ -280,6 +284,7 @@ Useful resources and dependencies that are used in Lingo.
 - [react-confetti](https://www.npmjs.com/package/react-confetti): ^6.4.0
 - [react-dom](https://www.npmjs.com/package/react-dom): ^19.2.8
 - [react-use](https://www.npmjs.com/package/react-use): ^17.6.1
+- [recharts](https://www.npmjs.com/package/recharts): ^3.10.1
 - [sonner](https://www.npmjs.com/package/sonner): ^2.0.8
 - [stripe](https://www.npmjs.com/package/stripe): ^22.5.0
 - [tailwind-merge](https://www.npmjs.com/package/tailwind-merge): ^3.6.0
