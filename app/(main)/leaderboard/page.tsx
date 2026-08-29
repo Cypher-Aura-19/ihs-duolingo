@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
@@ -14,11 +13,12 @@ import {
   getUserProgress,
   getUserSubscription,
 } from "@/db/queries";
+import { cn } from "@/lib/utils";
+
 
 const LeaderboardPage = async () => {
-  await auth.protect();
-
   const userProgressData = getUserProgress();
+
   const userSubscriptionData = getUserSubscription();
   const leaderboardData = getTopTenUsers();
 
@@ -41,9 +41,8 @@ const LeaderboardPage = async () => {
           points={userProgress.points}
           hasActiveSubscription={isPro}
         />
-        {!isPro && <Promo />}
-        <Quests points={userProgress.points} />
       </StickyWrapper>
+
 
       <FeedWrapper>
         <div className="flex w-full flex-col items-center">
@@ -54,34 +53,49 @@ const LeaderboardPage = async () => {
             width={90}
           />
 
-          <h1 className="my-6 text-center text-2xl font-bold text-neutral-800">
-            Leaderboard
+          <h1 className="my-6 text-center text-3xl font-extrabold font-heading text-[#1d1b15]">
+            Academic Leaderboard
           </h1>
-          <p className="mb-6 text-center text-lg text-muted-foreground">
-            See where you stand among other learners in the community.
+          <p className="mb-6 text-center text-base text-[#4b4738]">
+            See where you stand among esteemed scholars in the community.
           </p>
 
-          <Separator className="mb-4 h-0.5 rounded-full" />
-          {leaderboard.map((userProgress, i) => (
-            <div
-              key={userProgress.userId}
-              className="flex w-full items-center rounded-xl p-2 px-4 hover:bg-gray-200/50"
-            >
-              <p className="mr-4 font-bold text-lime-700">{i + 1}</p>
+          <Separator className="mb-4 h-0.5 rounded-full bg-[#e8e2d7]" />
+          <div className="w-full space-y-2">
+            {leaderboard.map((userProgress, i) => (
+              <div
+                key={userProgress.userId}
+                className="flex w-full items-center rounded-xl border border-[#e8e2d7] bg-white p-3 px-5 shadow-sm transition hover:bg-[#f9f3e8]"
+              >
+                <span
+                  className={cn(
+                    "mr-4 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold",
+                    i === 0 && "bg-[#fae282] text-[#534600]",
+                    i === 1 && "bg-[#d1d9f3] text-[#131b2e]",
+                    i === 2 && "bg-[#fdd2ac] text-[#5d4124]",
+                    i > 2 && "text-[#7c7766]"
+                  )}
+                >
+                  {i + 1}
+                </span>
 
-              <Avatar className="ml-3 mr-6 h-12 w-12 border bg-green-500">
-                <AvatarImage
-                  src={userProgress.userImageSrc}
-                  className="object-cover"
-                />
-              </Avatar>
+                <Avatar className="ml-2 mr-4 h-11 w-11 border border-[#e8e2d7] bg-[#f0d97a]/20">
+                  <AvatarImage
+                    src={userProgress.userImageSrc}
+                    className="object-cover"
+                  />
+                </Avatar>
 
-              <p className="flex-1 font-bold text-neutral-800">
-                {userProgress.userName}
-              </p>
-              <p className="text-muted-foreground">{userProgress.points} XP</p>
-            </div>
-          ))}
+                <p className="flex-1 font-bold text-[#1d1b15]">
+                  {userProgress.userName}
+                </p>
+                <span className="rounded-md bg-[#f3ede2] px-2.5 py-1 text-xs font-bold text-[#6e5e06]">
+                  {userProgress.points} XP
+                </span>
+              </div>
+            ))}
+          </div>
+
         </div>
       </FeedWrapper>
     </div>

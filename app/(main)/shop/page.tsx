@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
@@ -11,9 +10,8 @@ import { getUserProgress, getUserSubscription } from "@/db/queries";
 import { Items } from "./items";
 
 const ShopPage = async () => {
-  await auth.protect();
-
   const userProgressData = getUserProgress();
+
   const userSubscriptionData = getUserSubscription();
 
   const [userProgress, userSubscription] = await Promise.all([
@@ -34,20 +32,20 @@ const ShopPage = async () => {
           points={userProgress.points}
           hasActiveSubscription={isPro}
         />
-
-        <Quests points={userProgress.points} />
       </StickyWrapper>
+
 
       <FeedWrapper>
         <div className="flex w-full flex-col items-center">
           <Image src="/shop.svg" alt="Shop" height={90} width={90} />
 
-          <h1 className="my-6 text-center text-2xl font-bold text-neutral-800">
-            Shop
+          <h1 className="my-6 text-center text-3xl font-extrabold font-heading text-[#1d1b15]">
+            Academic Store
           </h1>
-          <p className="mb-6 text-center text-lg text-muted-foreground">
-            Spend your points on cool stuff.
+          <p className="mb-6 text-center text-base text-[#4b4738]">
+            Exchange points for study supplies and premium benefits.
           </p>
+
 
           <Items
             hearts={userProgress.hearts}

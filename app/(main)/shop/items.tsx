@@ -43,18 +43,20 @@ export const Items = ({
   };
 
   return (
-    <ul className="w-full">
-      <div className="flex w-full items-center gap-x-4 border-t-2 p-4">
-        <Image src="/heart.svg" alt="Heart" height={60} width={60} />
+    <ul className="w-full space-y-4">
+      <div className="flex w-full items-center gap-x-4 rounded-xl border border-[#e8e2d7] bg-white p-4 shadow-sm">
+        <Image src="/heart.svg" alt="Heart" height={50} width={50} />
 
         <div className="flex-1">
-          <p className="text-base font-bold text-neutral-700 lg:text-xl">
-            Refill hearts
+          <p className="text-base font-bold text-[#1d1b15] lg:text-lg font-heading">
+            Refill Hearts
           </p>
+          <p className="text-xs text-[#4b4738]">Replenish full energy to continue practicing.</p>
         </div>
 
         <Button
           onClick={onRefillHearts}
+          variant="primary"
           disabled={
             pending || hearts === MAX_HEARTS || points < POINTS_TO_REFILL
           }
@@ -63,30 +65,36 @@ export const Items = ({
           }
         >
           {hearts === MAX_HEARTS ? (
-            "full"
+            "Full"
           ) : (
-            <div className="flex items-center">
+            <div className="flex items-center gap-x-1.5">
               <Image src="/points.svg" alt="Points" height={20} width={20} />
-
-              <p>{POINTS_TO_REFILL}</p>
+              <span>{POINTS_TO_REFILL}</span>
             </div>
           )}
         </Button>
       </div>
 
-      <div className="flex w-full items-center gap-x-4 border-t-2 p-4 pt-8">
-        <Image src="/unlimited.svg" alt="Unlimited" height={60} width={60} />
+      <div className="flex w-full items-center gap-x-4 rounded-xl border border-[#e8e2d7] border-t-2 border-t-[#6e5e06] bg-white p-4 shadow-sm">
+        <Image src="/unlimited.svg" alt="Unlimited" height={50} width={50} />
 
         <div className="flex-1">
-          <p className="text-base font-bold text-neutral-700 lg:text-xl">
-            Unlimited hearts
+          <p className="text-base font-bold text-[#1d1b15] lg:text-lg font-heading">
+            Unlimited Hearts (Pro)
           </p>
+          <p className="text-xs text-[#4b4738]">Never run out of hearts while studying.</p>
         </div>
 
-        <Button onClick={onUpgrade} disabled={pending} aria-disabled={pending}>
-          {hasActiveSubscription ? "settings" : "upgrade"}
+        <Button
+          variant="secondary"
+          onClick={onUpgrade}
+          disabled={pending}
+          aria-disabled={pending}
+        >
+          {hasActiveSubscription ? "Active" : "Upgrade"}
         </Button>
       </div>
     </ul>
+
   );
 };
