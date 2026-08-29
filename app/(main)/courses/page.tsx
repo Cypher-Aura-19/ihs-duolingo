@@ -1,11 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
-
 import { getCourses, getUserProgress } from "@/db/queries";
 
 import { List } from "./list";
 
 const CoursesPage = async () => {
-  await auth.protect();
+
 
   const coursesData = getCourses();
   const userProgressData = getUserProgress();
@@ -16,11 +14,14 @@ const CoursesPage = async () => {
   ]);
 
   return (
-    <div className="mx-auto h-full max-w-[912px] px-3">
-      <h1 className="text-2xl font-bold text-neutral-700">Language Courses</h1>
+    <div className="mx-auto h-full max-w-[912px] px-3 py-6">
+      <h1 className="text-3xl font-extrabold font-heading text-[#1d1b15] mb-6">
+        Language Courses & Curricula
+      </h1>
 
       <List courses={courses} activeCourseId={userProgress?.activeCourseId} />
     </div>
+
   );
 };
 
