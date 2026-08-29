@@ -1,6 +1,5 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 
 import { ExitModal } from "@/components/modals/exit-modal";
 import { HeartsModal } from "@/components/modals/hearts-modal";
@@ -10,10 +9,18 @@ import { siteConfig } from "@/config";
 
 import "./globals.css";
 
-const font = Nunito({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+});
 
 export const viewport: Viewport = {
-  themeColor: "#22C55E",
+  themeColor: "#6e5e06",
 };
 
 export const metadata: Metadata = siteConfig;
@@ -24,27 +31,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        options: {
-          logoImageUrl: "/favicon.ico",
-        },
-        variables: {
-          colorPrimary: "#22C55E",
-        },
-      }}
-      telemetry={false}
-      afterSignOutUrl="/"
-    >
-      <html lang="en">
-        <body className={font.className}>
-          <Toaster theme="light" richColors closeButton />
-          <ExitModal />
-          <HeartsModal />
-          <PracticeModal />
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${manrope.variable} font-sans bg-[#fff9ee] text-[#1d1b15] antialiased`}
+        suppressHydrationWarning
+      >
+        <Toaster theme="light" richColors closeButton />
+        <ExitModal />
+        <HeartsModal />
+        <PracticeModal />
+        {children}
+      </body>
+    </html>
   );
 }
+
+

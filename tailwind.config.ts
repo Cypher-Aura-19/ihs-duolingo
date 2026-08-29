@@ -19,6 +19,10 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-manrope)", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -53,11 +57,33 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        academic: {
+          surface: "#fff9ee",
+          "surface-dim": "#dfd9cf",
+          "surface-bright": "#fff9ee",
+          "surface-low": "#f9f3e8",
+          "surface-container": "#f3ede2",
+          "surface-high": "#eee7dd",
+          "surface-highest": "#e8e2d7",
+          "on-surface": "#1d1b15",
+          "on-surface-variant": "#4b4738",
+          outline: "#7c7766",
+          "outline-variant": "#cdc6b3",
+          gold: "#6e5e06",
+          "gold-light": "#f0d97a",
+          "gold-dim": "#dcc669",
+          bronze: "#77583a",
+          "bronze-dark": "#5d4124",
+          "bronze-light": "#fdd2ac",
+          slate: "#565e74",
+          "slate-light": "#d1d9f3",
+          navy: "#131b2e",
+        },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "12px",
+        md: "8px",
+        sm: "6px",
       },
       keyframes: {
         "accordion-down": {
@@ -79,3 +105,4 @@ const config = {
 } satisfies Config;
 
 export default config;
+
