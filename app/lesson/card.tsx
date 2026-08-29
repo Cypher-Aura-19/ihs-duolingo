@@ -46,14 +46,14 @@ export const Card = ({
     <div
       onClick={handleClick}
       className={cn(
-        "h-full cursor-pointer rounded-xl border-2 border-b-4 p-4 hover:bg-black/5 active:border-b-2 lg:p-6",
-        selected && "border-sky-300 bg-sky-100 hover:bg-sky-100",
+        "h-full cursor-pointer rounded-xl border-2 border-b-4 border-[#e8e2d7] bg-white p-4 hover:bg-[#f9f3e8] active:border-b-2 lg:p-6 shadow-sm",
+        selected && "border-[#dcc669] bg-[#fff9ee] hover:bg-[#fff9ee]",
         selected &&
           status === "correct" &&
-          "border-green-300 bg-green-100 hover:bg-green-100",
+          "border-[#6e5e06] bg-[#f0d97a]/30 hover:bg-[#f0d97a]/30",
         selected &&
           status === "wrong" &&
-          "border-rose-300 bg-rose-100 hover:bg-rose-100",
+          "border-[#ba1a1a] bg-[#ffdad6]/40 hover:bg-[#ffdad6]/40",
         disabled && "pointer-events-none hover:bg-white",
         type === "ASSIST" && "w-full lg:p-3"
       )}
@@ -74,10 +74,10 @@ export const Card = ({
         {type === "ASSIST" && <div aria-hidden />}
         <p
           className={cn(
-            "text-sm text-neutral-600 lg:text-base",
-            selected && "text-sky-500",
-            selected && status === "correct" && "text-green-500",
-            selected && status === "wrong" && "text-rose-500"
+            "text-sm font-medium text-[#1d1b15] lg:text-base",
+            selected && "text-[#6e5e06] font-bold",
+            selected && status === "correct" && "text-[#6e5e06] font-bold",
+            selected && status === "wrong" && "text-[#ba1a1a] font-bold"
           )}
         >
           {text}
@@ -85,17 +85,18 @@ export const Card = ({
 
         <div
           className={cn(
-            "flex h-[20px] w-[20px] items-center justify-center rounded-lg border-2 text-xs font-semibold text-neutral-400 lg:h-[30px] lg:w-[30px] lg:text-[15px]",
-            selected && "border-sky-300 text-sky-500",
+            "flex h-[20px] w-[20px] items-center justify-center rounded-lg border-2 border-[#cdc6b3] text-xs font-semibold text-[#7c7766] lg:h-[30px] lg:w-[30px] lg:text-[15px]",
+            selected && "border-[#6e5e06] text-[#6e5e06] bg-[#f0d97a]/20",
             selected &&
               status === "correct" &&
-              "border-green-500 text-green-500",
-            selected && status === "wrong" && "border-rose-500 text-rose-500"
+              "border-[#6e5e06] text-[#6e5e06] bg-[#f0d97a]/40",
+            selected && status === "wrong" && "border-[#ba1a1a] text-[#ba1a1a] bg-[#ffdad6]/50"
           )}
         >
           {shortcut}
         </div>
       </div>
     </div>
+
   );
 };
