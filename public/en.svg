@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" role="img" aria-labelledby="title">
+  <title id="title">English course flag</title>
+  <rect width="64" height="48" rx="6" fill="#17365d"/>
+  <path d="M0 4.5 24.8 24 0 43.5V48h5.8L32 27.4 58.2 48H64v-4.5L39.2 24 64 4.5V0h-5.8L32 20.6 5.8 0H0z" fill="#fff"/>
+  <path d="m0 0 27 21.2V0h10v21.2L64 0v5.7L40.7 24 64 42.3V48L37 26.8V48H27V26.8L0 48v-5.7L23.3 24 0 5.7z" fill="#c8102e"/>
+  <path d="M25 0h14v17h25v14H39v17H25V31H0V17h25z" fill="#fff"/>
+  <path d="M28 0h8v20h28v8H36v20h-8V28H0v-8h28z" fill="#c8102e"/>
+</svg>
